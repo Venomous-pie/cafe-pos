@@ -63,8 +63,8 @@ export default function Sidebar() {
     <aside className="sidebar">
       {/* Logo */}
       <div className="sidebar-logo">
-        <div className="logo-icon" style={{ padding: 0, overflow: 'hidden' }}>
-          <Image src="/logo.png" alt="Logo" width={40} height={40} className="w-full h-full object-cover" />
+        <div className="logo-icon">
+          <Image src="/logo.png" alt="Logo" width={60} height={60} className="w-full h-full object-contain" />
         </div>
       </div>
 
