@@ -7,61 +7,153 @@ import MenuGrid from "./components/MenuGrid";
 import OrderPanel from "./components/OrderPanel";
 import menuData from "@/data/menu.json";
 
-interface CartItem {
-  id: number;
-  name: string;
-  category: string;
-  image: string;
-  price: number;
-  quantity: number;
-}
-
-interface MenuItem {
-  id: number;
-  name: string;
-  category: string;
-  image: string;
-  price: number;
-  originalPrice: number | null;
-  available: number;
-  sold: number;
-  discount: number | null;
-  unit: string;
-}
+import { MenuItem, CartItem, SelectedOptions } from "./types";
+import ProductModal from "./components/ProductModal";
+import { calculateItemPrice } from "./utils/pricing";
 
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
+  const [selectedProduct, setSelectedProduct] = useState<MenuItem | null>(null);
+  const [editingCartItem, setEditingCartItem] = useState<CartItem | null>(null);
+
+  const generateCartItemId = (
+    productId: number,
+    variant?: string,
+    options?: SelectedOptions
+  ) => {
+    let idStr = `${productId}`;
+    if (variant) idStr += `-${variant}`;
+    if (options) {
+      const optionKeys = Object.keys(options).sort();
+      for (const key of optionKeys) {
+        idStr += `-${key}:${options[key]}`;
+      }
+    }
+    return idStr;
+  };
+
   const handleAddToCart = (item: MenuItem) => {
+    if (
+      (item.variants && item.variants.length > 0) ||
+      (item.options && item.options.length > 0)
+    ) {
+      // Open modal for items with variations
+      setSelectedProduct(item);
+      setEditingCartItem(null);
+    } else {
+      // Add directly
+      addOrUpdateCart(item, 1);
+    }
+  };
+
+  const addOrUpdateCart = (
+    item: MenuItem,
+    quantity: number,
+    variant?: string,
+    options?: SelectedOptions
+  ) => {
+    const cartItemId = generateCartItemId(item.id, variant, options);
+    const unitPrice = calculateItemPrice(item, variant, options);
+
     setCartItems((prev) => {
-      const existing = prev.find((c) => c.id === item.id);
+      const existing = prev.find((c) => c.id === cartItemId);
       if (existing) {
         return prev.map((c) =>
-          c.id === item.id ? { ...c, quantity: c.quantity + 1 } : c
+          c.id === cartItemId ? { ...c, quantity: c.quantity + quantity } : c
         );
       }
       return [
         ...prev,
         {
-          id: item.id,
+          id: cartItemId,
+          productId: item.id,
           name: item.name,
           category: item.category,
           image: item.image,
-          price: item.price,
-          quantity: 1,
+          basePrice: item.price,
+          price: unitPrice,
+          quantity,
+          variant,
+          options,
         },
       ];
     });
   };
 
-  const handleUpdateQty = (id: number, delta: number) => {
+  const handleModalConfirm = (
+    item: MenuItem,
+    quantity: number,
+    variant?: string,
+    options?: SelectedOptions
+  ) => {
+    if (editingCartItem) {
+      // If editing, we first remove the old item, then add the new one.
+      // Or if the id is the same, just update quantity.
+      const newCartItemId = generateCartItemId(item.id, variant, options);
+      const unitPrice = calculateItemPrice(item, variant, options);
+
+      setCartItems((prev) => {
+        // If the configuration didn't change (ID is the same)
+        if (newCartItemId === editingCartItem.id) {
+          return prev.map((c) =>
+            c.id === editingCartItem.id ? { ...c, quantity } : c
+          );
+        }
+
+        // If the configuration changed, remove old, add new or merge with existing new
+        const filtered = prev.filter((c) => c.id !== editingCartItem.id);
+        const existingNew = filtered.find((c) => c.id === newCartItemId);
+        
+        if (existingNew) {
+           return filtered.map((c) =>
+             c.id === newCartItemId ? { ...c, quantity: c.quantity + quantity } : c
+           );
+        }
+
+        return [
+          ...filtered,
+          {
+            id: newCartItemId,
+            productId: item.id,
+            name: item.name,
+            category: item.category,
+            image: item.image,
+            basePrice: item.price,
+            price: unitPrice,
+            quantity,
+            variant,
+            options,
+          }
+        ];
+      });
+    } else {
+      addOrUpdateCart(item, quantity, variant, options);
+    }
+    setSelectedProduct(null);
+    setEditingCartItem(null);
+  };
+
+  const handleUpdateQty = (id: string, delta: number) => {
     setCartItems((prev) => {
       return prev
         .map((c) => (c.id === id ? { ...c, quantity: c.quantity + delta } : c))
         .filter((c) => c.quantity > 0);
     });
+  };
+
+  const handleRemoveItem = (id: string) => {
+    setCartItems((prev) => prev.filter((c) => c.id !== id));
+  };
+
+  const handleEditItem = (cartItem: CartItem) => {
+    const itemDef = menuData.menuItems.find((m) => m.id === cartItem.productId);
+    if (itemDef) {
+      setEditingCartItem(cartItem);
+      setSelectedProduct(itemDef as MenuItem);
+    }
   };
 
   const handleClearCart = () => setCartItems([]);
@@ -117,8 +209,23 @@ export default function Home() {
       <OrderPanel
         cartItems={cartItems}
         onUpdateQty={handleUpdateQty}
+        onRemoveItem={handleRemoveItem}
+        onEditItem={handleEditItem}
         onClearCart={handleClearCart}
       />
+
+      {/* Product Modal */}
+      {selectedProduct && (
+        <ProductModal
+          item={selectedProduct}
+          existingCartItem={editingCartItem || undefined}
+          onClose={() => {
+            setSelectedProduct(null);
+            setEditingCartItem(null);
+          }}
+          onConfirm={handleModalConfirm}
+        />
+      )}
     </div>
   );
 }

@@ -25,7 +25,31 @@
       "available": 28,
       "sold": 14,
       "discount": 15,
-      "unit": "Cup"
+      "unit": "Cup",
+      "variants": [
+        { "name": "Regular", "price": 185 },
+        { "name": "Large", "price": 205 }
+      ],
+      "options": [
+        {
+          "name": "Milk Type",
+          "required": true,
+          "choices": [
+            { "name": "Whole Milk" },
+            { "name": "Oat Milk", "additionalPrice": 20 },
+            { "name": "Almond Milk", "additionalPrice": 20 }
+          ]
+        },
+        {
+          "name": "Sugar Level",
+          "required": true,
+          "choices": [
+            { "name": "0%" },
+            { "name": "50%" },
+            { "name": "100%" }
+          ]
+        }
+      ]
     },
     {
       "id": 2,
@@ -85,7 +109,25 @@
       "available": 12,
       "sold": 19,
       "discount": 10,
-      "unit": "Piece"
+      "unit": "Piece",
+      "options": [
+        {
+          "name": "Bread",
+          "required": true,
+          "choices": [
+            { "name": "White" },
+            { "name": "Wheat" }
+          ]
+        },
+        {
+          "name": "Add-ons",
+          "required": false,
+          "choices": [
+            { "name": "Extra Cheese", "additionalPrice": 25 },
+            { "name": "Bacon", "additionalPrice": 40 }
+          ]
+        }
+      ]
     },
     {
       "id": 7,

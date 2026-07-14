@@ -1,21 +1,17 @@
 "use client";
+import "./ProductModal.css";
 
 import Image from "next/image";
 import { JSX, useState } from "react";
 import menuData from "@/data/menu.json";
 
-interface CartItem {
-  id: number;
-  name: string;
-  category: string;
-  image: string;
-  price: number;
-  quantity: number;
-}
+import { CartItem } from "../types";
 
 interface OrderPanelProps {
   cartItems: CartItem[];
-  onUpdateQty: (id: number, delta: number) => void;
+  onUpdateQty: (id: string, delta: number) => void;
+  onRemoveItem: (id: string) => void;
+  onEditItem: (item: CartItem) => void;
   onClearCart: () => void;
 }
 
@@ -55,7 +51,7 @@ const PaymentIcons: Record<string, JSX.Element> = {
   ),
 };
 
-export default function OrderPanel({ cartItems, onUpdateQty, onClearCart }: OrderPanelProps) {
+export default function OrderPanel({ cartItems, onUpdateQty, onRemoveItem, onEditItem, onClearCart }: OrderPanelProps) {
   const [selectedPayment, setSelectedPayment] = useState("cash");
   const [processing, setProcessing] = useState(false);
 
@@ -80,8 +76,8 @@ export default function OrderPanel({ cartItems, onUpdateQty, onClearCart }: Orde
         <div className="order-header">
           <h2 className="order-title">Order Details</h2>
           {cartItems.length > 0 && (
-            <button className="clear-btn" onClick={onClearCart}>
-              Clear All
+            <button className="clear-btn cancel-order-btn" onClick={onClearCart}>
+              Cancel Order
             </button>
           )}
         </div>
@@ -101,7 +97,7 @@ export default function OrderPanel({ cartItems, onUpdateQty, onClearCart }: Orde
           ) : (
             cartItems.map((item) => (
               <div key={item.id} className="cart-item">
-                <div className="cart-item-image-wrap">
+                <div className="cart-item-image-wrap" onClick={() => onEditItem(item)} style={{ cursor: 'pointer' }}>
                   <Image
                     src={item.image}
                     alt={item.name}
@@ -111,8 +107,15 @@ export default function OrderPanel({ cartItems, onUpdateQty, onClearCart }: Orde
                   />
                 </div>
                 <div className="cart-item-info">
-                  <p className="cart-item-name">{item.name}</p>
-                  <p className="cart-item-category">{item.category}</p>
+                  <p className="cart-item-name" onClick={() => onEditItem(item)} style={{ cursor: 'pointer' }}>
+                    {item.name}
+                  </p>
+                  <div className="cart-item-meta" onClick={() => onEditItem(item)} style={{ cursor: 'pointer' }}>
+                    {item.variant && <span className="cart-variant">{item.variant}</span>}
+                    {item.options && Object.entries(item.options).map(([k, v]) => (
+                      <span key={k} className="cart-option">{v}</span>
+                    ))}
+                  </div>
                   <div className="cart-item-controls">
                     <button
                       className="qty-btn"
@@ -134,8 +137,16 @@ export default function OrderPanel({ cartItems, onUpdateQty, onClearCart }: Orde
                     </button>
                   </div>
                 </div>
-                <div className="cart-item-price">
-                  ₱{(item.price * item.quantity).toLocaleString()}
+                <div className="cart-item-actions">
+                  <button className="remove-item-btn" onClick={() => onRemoveItem(item.id)}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                  <div className="cart-item-price">
+                    ₱{(item.price * item.quantity).toLocaleString()}
+                  </div>
                 </div>
               </div>
             ))

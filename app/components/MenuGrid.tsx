@@ -3,18 +3,7 @@
 import Image from "next/image";
 import menuData from "@/data/menu.json";
 
-interface MenuItem {
-  id: number;
-  name: string;
-  category: string;
-  image: string;
-  price: number;
-  originalPrice: number | null;
-  available: number;
-  sold: number;
-  discount: number | null;
-  unit: string;
-}
+import { MenuItem } from "../types";
 
 interface MenuCardProps {
   item: MenuItem;
