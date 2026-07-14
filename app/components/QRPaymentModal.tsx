@@ -4,7 +4,7 @@ import Image from "next/image";
 import "./QRPaymentModal.css";
 
 interface QRPaymentModalProps {
-  method: "qr" | "maya" | "maribank";
+  method: "gcash" | "maya" | "maribank";
   methodName: string;
   amount: number;
   onConfirm: () => void; // mock: simulates customer completing payment
@@ -15,7 +15,7 @@ const formatPeso = (amount: number) =>
   `₱${amount.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 const logos: Record<string, string> = {
-  qr: "/payment_platform/gcash.jpeg",
+  gcash: "/payment_platform/gcash.jpeg",
   maya: "/payment_platform/maya.jpeg",
   maribank: "/payment_platform/maribank.jpeg",
 };

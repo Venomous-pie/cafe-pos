@@ -44,8 +44,16 @@ export default function Home() {
     fetchMenu();
   }, [fetchMenu]);
 
-  // ── Cashier info (static for now) ─────────────────────────────────────────
-  const cashierName = "Claire Jem Dedicatoria";
+  // ── Cashier / store info ───────────────────────────────────────────────────
+  const [cashierName, setCashierName] = useState("Cashier");
+
+  useEffect(() => {
+    fetch("/api/config")
+      .then((r) => r.json())
+      .then((cfg) => { if (cfg.cashierName) setCashierName(cfg.cashierName); })
+      .catch(() => {}); // non-critical — fallback stays
+  }, []);
+
   const cashierDate = new Date().toLocaleDateString("en-PH", {
     weekday: "long",
     day: "numeric",

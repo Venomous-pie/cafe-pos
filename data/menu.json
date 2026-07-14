@@ -204,7 +204,7 @@
   ],
   "paymentMethods": [
     { "id": "cash", "name": "Cash" },
-    { "id": "qr", "name": "GCash" },
+    { "id": "gcash", "name": "GCash" },
     { "id": "maya", "name": "Maya" },
     { "id": "maribank", "name": "Maribank" }
   ],

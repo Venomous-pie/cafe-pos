@@ -5,7 +5,7 @@ import Image from "next/image";
 import { JSX, useState } from "react";
 
 import { CartItem } from "../types";
-import { Order } from "@prisma/client";
+import { Order, OrderItem } from "@prisma/client";
 import ReceiptModal from "./ReceiptModal";
 import QRPaymentModal from "./QRPaymentModal";
 
@@ -13,14 +13,14 @@ const TAX_RATE = 0.08;
 
 const PAYMENT_METHODS = [
   { id: "cash", name: "Cash" },
-  { id: "qr", name: "GCash" },
+  { id: "gcash", name: "GCash" },
   { id: "maya", name: "Maya" },
   { id: "maribank", name: "Maribank" },
 ] as const;
 
 type PaymentMethodId = (typeof PAYMENT_METHODS)[number]["id"];
 
-const QR_METHODS: PaymentMethodId[] = ["qr", "maya", "maribank"];
+const QR_METHODS: PaymentMethodId[] = ["gcash", "maya", "maribank"];
 
 // ─── Payment Icons ──────────────────────────────────────────────────────────
 const FallbackIcon = (
@@ -38,7 +38,7 @@ const PaymentIcons: Record<string, JSX.Element> = {
       <path d="M6 12h.01M18 12h.01" />
     </svg>
   ),
-  qr: (
+  gcash: (
     <div className="pay-icon-img-wrap">
       <Image src="/payment_platform/gcash.jpeg" alt="GCash" fill style={{ objectFit: "cover" }} sizes="24px" />
     </div>
@@ -67,6 +67,13 @@ const formatPeso = (amount: number) =>
   `₱${amount.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 // ─── Types ──────────────────────────────────────────────────────────────────
+interface OrderWithItems extends Order {
+  items: OrderItem[];
+  storeName?: string;
+  storeAddress?: string;
+  storeTin?: string;
+}
+
 interface OrderPanelProps {
   cartItems: CartItem[];
   onUpdateQty: (id: string, delta: number) => void;
@@ -89,8 +96,9 @@ export default function OrderPanel({
   const [processing, setProcessing] = useState(false);
   const [orderError, setOrderError] = useState<OrderError | null>(null);
   const [hardwareWarning, setHardwareWarning] = useState<string | null>(null);
-  const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
+  const [completedOrder, setCompletedOrder] = useState<OrderWithItems | null>(null);
   const [showQRModal, setShowQRModal] = useState(false);
+  const [amountReceived, setAmountReceived] = useState<string>("");
 
   // Display-only estimates — server recalculates authoritatively on submit.
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -98,9 +106,20 @@ export default function OrderPanel({
   const total = subtotal + taxAmount;
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
+  const isCash = selectedPayment === "cash";
+  const amountReceivedNum = parseFloat(amountReceived) || 0;
+  const changeDue = amountReceivedNum - total;
+  const cashReady = !isCash || amountReceivedNum >= total;
+
   const handleCancelOrder = () => {
     if (!window.confirm("Cancel the entire order? All items will be removed.")) return;
     onClearCart();
+    setAmountReceived("");
+  };
+
+  const handlePaymentChange = (id: PaymentMethodId) => {
+    setSelectedPayment(id);
+    setAmountReceived("");
   };
 
   const submitOrder = async () => {
@@ -151,10 +170,8 @@ export default function OrderPanel({
   };
 
   const handleProcess = () => {
-    if (cartItems.length === 0) return;
+    if (cartItems.length === 0 || !cashReady) return;
 
-    // QR-based methods show a scan screen with the amount before submitting the order.
-    // Cash skips straight to submission — no QR needed at the register.
     if (QR_METHODS.includes(selectedPayment)) {
       setShowQRModal(true);
       return;
@@ -350,7 +367,7 @@ export default function OrderPanel({
             {PAYMENT_METHODS.map((method) => (
               <button
                 key={method.id}
-                onClick={() => setSelectedPayment(method.id)}
+                onClick={() => handlePaymentChange(method.id)}
                 className={`payment-method-btn ${selectedPayment === method.id ? "active" : ""}`}
                 aria-label={`Pay with ${method.name}`}
                 aria-pressed={selectedPayment === method.id}
@@ -360,13 +377,48 @@ export default function OrderPanel({
               </button>
             ))}
           </div>
+
+          {/* Cash change calculator */}
+          {isCash && cartItems.length > 0 && (
+            <div className="cash-change-section">
+              <div className="cash-change-row">
+                <label htmlFor="amount-received" className="cash-change-label">
+                  Amount Received
+                </label>
+                <div className="cash-change-input-wrap">
+                  <span className="cash-currency-symbol">₱</span>
+                  <input
+                    id="amount-received"
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    placeholder={total.toFixed(2)}
+                    value={amountReceived}
+                    onChange={(e) => setAmountReceived(e.target.value)}
+                    className="cash-amount-input"
+                    aria-label="Amount received from customer"
+                  />
+                </div>
+              </div>
+              {amountReceived !== "" && (
+                <div className={`cash-change-due-row ${changeDue < 0 ? "insufficient" : ""}`}>
+                  <span>Change Due</span>
+                  <span className="cash-change-due-value">
+                    {changeDue < 0
+                      ? `Short by ${formatPeso(Math.abs(changeDue))}`
+                      : formatPeso(changeDue)}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Process Button */}
         <button
-          className={`process-btn ${processing ? "processing" : ""} ${cartItems.length === 0 ? "disabled" : ""}`}
+          className={`process-btn ${processing ? "processing" : ""} ${cartItems.length === 0 || !cashReady ? "disabled" : ""}`}
           onClick={handleProcess}
-          disabled={cartItems.length === 0 || processing}
+          disabled={cartItems.length === 0 || processing || !cashReady}
           aria-busy={processing}
           aria-label="Process transaction"
         >
@@ -389,7 +441,7 @@ export default function OrderPanel({
 
       {showQRModal && (
         <QRPaymentModal
-          method={selectedPayment as "qr" | "maya" | "maribank"}
+          method={selectedPayment as "gcash" | "maya" | "maribank"}
           methodName={PAYMENT_METHODS.find((m) => m.id === selectedPayment)?.name ?? ""}
           amount={total}
           onConfirm={handleQRConfirmed}
@@ -401,9 +453,11 @@ export default function OrderPanel({
         <ReceiptModal
           order={completedOrder}
           cartItems={cartItems}
+          amountReceived={isCash && amountReceivedNum > 0 ? amountReceivedNum : undefined}
           onClose={() => {
             setCompletedOrder(null);
             onClearCart();
+            setAmountReceived("");
           }}
         />
       )}

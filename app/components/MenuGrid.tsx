@@ -10,9 +10,18 @@ interface MenuCardProps {
 }
 
 function MenuCard({ item, onAdd }: MenuCardProps) {
+  const isOutOfStock = item.available <= 0;
+
   return (
-    <div className="menu-card" onClick={() => onAdd(item)}>
-      {item.discount && (
+    <div
+      className={`menu-card ${isOutOfStock ? "out-of-stock" : ""}`}
+      onClick={isOutOfStock ? undefined : () => onAdd(item)}
+      role={isOutOfStock ? undefined : "button"}
+      tabIndex={isOutOfStock ? -1 : 0}
+      onKeyDown={isOutOfStock ? undefined : (e) => e.key === "Enter" && onAdd(item)}
+    >
+      {isOutOfStock && <span className="menu-card-sold-out-badge">Sold Out</span>}
+      {!isOutOfStock && item.discount && (
         <span className="menu-card-badge">{item.discount}% Off</span>
       )}
       <div className="menu-card-image-wrap">
@@ -27,7 +36,7 @@ function MenuCard({ item, onAdd }: MenuCardProps) {
       <div className="menu-card-info">
         <h3 className="menu-card-name">{item.name}</h3>
         <p className="menu-card-meta">
-          {item.available} Available &bull; {item.sold} Sold
+          {isOutOfStock ? "Out of stock" : `${item.available} Available`} &bull; {item.sold} Sold
         </p>
         <div className="menu-card-price-row">
           {item.originalPrice && (
@@ -62,12 +71,6 @@ export default function MenuGrid({ activeCategory, searchQuery, menuItems, onAdd
     <div>
       <div className="menu-section-header">
         <h2 className="section-title">Select Menu</h2>
-        <button className="filter-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
-            <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46 22,3" />
-          </svg>
-          Filter
-        </button>
       </div>
       <div className="menu-grid">
         {filtered.length === 0 ? (

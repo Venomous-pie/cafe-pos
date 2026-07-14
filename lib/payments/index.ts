@@ -8,7 +8,7 @@ export type { PaymentProvider };
 
 const providers: Record<string, PaymentProvider> = {
   cash: new CashProvider(),
-  qr: new GCashProvider(),
+  gcash: new GCashProvider(),
   maya: new MayaProvider(),
   maribank: new MaribankProvider(),
 };

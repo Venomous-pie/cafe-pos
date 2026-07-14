@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { calculateOrderTotals, OrderItemInput } from "@/lib/pricing";
 import { getProvider } from "@/lib/payments";
 import { getCashDrawer, getReceiptPrinter, OrderWithTotals } from "@/lib/hardware";
+import { storeConfig } from "@/lib/config";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -73,11 +74,22 @@ export async function POST(request: Request) {
       // If pending (e.g. QR code shown, waiting for scan), we might return early here in a real app,
       // but for this slice, all our providers immediately resolve 'success'.
       
-      // Update to paid
-      await prisma.order.update({
-        where: { id: order.id },
-        data: { paymentStatus: "paid", status: "completed" }
-      });
+      // Update to paid + atomically decrement stock / increment sold
+      await prisma.$transaction([
+        prisma.order.update({
+          where: { id: order.id },
+          data: { paymentStatus: "paid", status: "completed" },
+        }),
+        ...totals.lineItems.map((li) =>
+          prisma.product.update({
+            where: { id: li.productId },
+            data: {
+              available: { decrement: li.quantity },
+              sold: { increment: li.quantity },
+            },
+          })
+        ),
+      ]);
 
     } catch (paymentErr: any) {
       console.error("Payment provider error:", paymentErr);
@@ -123,7 +135,7 @@ export async function POST(request: Request) {
       include: { items: true }
     });
 
-    return NextResponse.json({ ...finalOrder, hardwareWarning });
+    return NextResponse.json({ ...finalOrder, hardwareWarning, ...storeConfig });
 
   } catch (error: any) {
     console.error("Order creation failed:", error);

@@ -117,7 +117,7 @@ button {
   align-items: center;
   justify-content: center;
   border-radius: 10px;
-  color: var(--text-secondary); 
+  color: var(--text-secondary);
   transition: all 0.2s ease;
   position: relative;
 }
@@ -296,15 +296,9 @@ button {
    CATEGORY BAR
    ============================================ */
 .category-bar {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
   gap: 10px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-  scrollbar-width: none;
-}
-
-.category-bar::-webkit-scrollbar {
-  display: none;
 }
 
 .category-item {
@@ -317,11 +311,10 @@ button {
   border-radius: var(--radius-md);
   background: #ffffff;
   border: 1.5px solid #d1d5db;
-  width: 108;
-  height: 108px;
+  aspect-ratio: 1 / 1;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
   transition: all 0.2s ease;
-  flex-shrink: 0;
+  max-width: 160px;
 }
 
 .category-item:hover {
@@ -457,6 +450,27 @@ button {
   top: 10px;
   left: 10px;
   background: var(--brand);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 100px;
+  z-index: 2;
+  letter-spacing: 0.3px;
+}
+
+/* Out of stock */
+.menu-card.out-of-stock {
+  cursor: not-allowed;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.menu-card-sold-out-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: #64748b;
   color: white;
   font-size: 10px;
   font-weight: 700;
@@ -806,6 +820,92 @@ button {
   border-color: var(--brand);
   color: var(--brand);
   box-shadow: 0 2px 8px rgba(232, 112, 58, 0.2);
+}
+
+/* Cash change calculator */
+.cash-change-section {
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--bg);
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cash-change-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cash-change-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.cash-change-input-wrap {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.cash-change-input-wrap:focus-within {
+  border-color: var(--brand);
+}
+
+.cash-currency-symbol {
+  padding: 6px 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brand);
+  background: var(--brand-light);
+  border-right: 1.5px solid var(--border);
+  user-select: none;
+}
+
+.cash-amount-input {
+  width: 90px;
+  padding: 6px 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.cash-amount-input::-webkit-inner-spin-button,
+.cash-amount-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+
+.cash-change-due-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #16a34a;
+  padding-top: 4px;
+  border-top: 1px dashed var(--border);
+}
+
+.cash-change-due-row.insufficient {
+  color: #dc2626;
+}
+
+.cash-change-due-value {
+  font-size: 14px;
+  font-weight: 800;
 }
 
 .pay-icon {
@@ -1171,5 +1271,111 @@ button {
 
 .cancel-order-btn:hover {
   background: #ef4444;
+  color: white;
+}
+
+/* ============================================
+   ORDERS HISTORY PAGE
+   ============================================ */
+.orders-table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+
+.orders-table th {
+  background: var(--bg);
+  padding: 12px 16px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+}
+
+.orders-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+
+.order-row {
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.order-row:hover {
+  background: var(--bg);
+}
+
+.font-mono {
+  font-family: monospace;
+}
+
+.text-sm {
+  font-size: 14px;
+}
+
+.text-xs {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+.text-brand {
+  color: var(--brand);
+}
+
+.uppercase {
+  text-transform: uppercase;
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.status-pending {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.status-completed {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.status-cancelled {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.danger-btn {
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.danger-btn:hover:not(:disabled) {
+  background: #dc2626;
+  border-color: #dc2626;
   color: white;
 }
