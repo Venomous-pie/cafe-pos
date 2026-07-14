@@ -1,0 +1,170 @@
+{
+  "cashier": {
+    "name": "Maria Santos",
+    "role": "Cashier",
+    "avatar": null,
+    "date": "Monday, 14 July 2026"
+  },
+  "categories": [
+    { "id": "all", "name": "All Menu", "icon": "grid", "count": 32 },
+    { "id": "coffee", "name": "Coffee", "icon": "coffee", "count": 12 },
+    { "id": "tea", "name": "Tea", "icon": "leaf", "count": 8 },
+    { "id": "mocktail", "name": "Mocktail", "icon": "glass", "count": 6 },
+    { "id": "snacks", "name": "Snacks", "icon": "cookie", "count": 10 },
+    { "id": "pastry", "name": "Pastry", "icon": "cake", "count": 7 },
+    { "id": "sandwich", "name": "Sandwich", "icon": "sandwich", "count": 5 }
+  ],
+  "menuItems": [
+    {
+      "id": 1,
+      "name": "Cafe Latte",
+      "category": "coffee",
+      "image": "/coffee_latte.png",
+      "price": 185,
+      "originalPrice": 220,
+      "available": 28,
+      "sold": 14,
+      "discount": 15,
+      "unit": "Cup"
+    },
+    {
+      "id": 2,
+      "name": "Cappuccino",
+      "category": "coffee",
+      "image": "/cappuccino.png",
+      "price": 175,
+      "originalPrice": null,
+      "available": 30,
+      "sold": 8,
+      "discount": null,
+      "unit": "Cup"
+    },
+    {
+      "id": 3,
+      "name": "Matcha Latte",
+      "category": "tea",
+      "image": "/matcha_latte.png",
+      "price": 195,
+      "originalPrice": 240,
+      "available": 20,
+      "sold": 18,
+      "discount": 20,
+      "unit": "Cup"
+    },
+    {
+      "id": 4,
+      "name": "Caramel Macchiato",
+      "category": "coffee",
+      "image": "/caramel_macchiato.png",
+      "price": 210,
+      "originalPrice": null,
+      "available": 25,
+      "sold": 10,
+      "discount": null,
+      "unit": "Cup"
+    },
+    {
+      "id": 5,
+      "name": "Choco Croissant",
+      "category": "pastry",
+      "image": "/chocolate_croissant.png",
+      "price": 120,
+      "originalPrice": null,
+      "available": 15,
+      "sold": 22,
+      "discount": null,
+      "unit": "Piece"
+    },
+    {
+      "id": 6,
+      "name": "Chicken Sandwich",
+      "category": "sandwich",
+      "image": "/chicken_sandwich.png",
+      "price": 265,
+      "originalPrice": 310,
+      "available": 12,
+      "sold": 19,
+      "discount": 10,
+      "unit": "Piece"
+    },
+    {
+      "id": 7,
+      "name": "Blueberry Cheesecake",
+      "category": "pastry",
+      "image": "/blueberry_cheesecake.png",
+      "price": 155,
+      "originalPrice": null,
+      "available": 8,
+      "sold": 25,
+      "discount": null,
+      "unit": "Slice"
+    },
+    {
+      "id": 8,
+      "name": "Spanish Latte",
+      "category": "coffee",
+      "image": "/coffee_latte.png",
+      "price": 200,
+      "originalPrice": null,
+      "available": 22,
+      "sold": 16,
+      "discount": null,
+      "unit": "Cup"
+    },
+    {
+      "id": 9,
+      "name": "Chamomile Tea",
+      "category": "tea",
+      "image": "/matcha_latte.png",
+      "price": 145,
+      "originalPrice": null,
+      "available": 18,
+      "sold": 5,
+      "discount": null,
+      "unit": "Cup"
+    },
+    {
+      "id": 10,
+      "name": "Club Sandwich",
+      "category": "sandwich",
+      "image": "/chicken_sandwich.png",
+      "price": 285,
+      "originalPrice": 340,
+      "available": 10,
+      "sold": 12,
+      "discount": 15,
+      "unit": "Piece"
+    },
+    {
+      "id": 11,
+      "name": "Americano",
+      "category": "coffee",
+      "image": "/cappuccino.png",
+      "price": 150,
+      "originalPrice": null,
+      "available": 35,
+      "sold": 30,
+      "discount": null,
+      "unit": "Cup"
+    },
+    {
+      "id": 12,
+      "name": "Strawberry Cheesecake",
+      "category": "pastry",
+      "image": "/blueberry_cheesecake.png",
+      "price": 155,
+      "originalPrice": 185,
+      "available": 6,
+      "sold": 20,
+      "discount": 10,
+      "unit": "Slice"
+    }
+  ],
+  "paymentMethods": [
+    { "id": "cash", "name": "Cash", "icon": "banknote" },
+    { "id": "card", "name": "Card", "icon": "credit-card" },
+    { "id": "qr", "name": "GCash", "icon": "qr-code" },
+    { "id": "maya", "name": "Maya", "icon": "wallet" }
+  ],
+  "taxRate": 0.08
+}

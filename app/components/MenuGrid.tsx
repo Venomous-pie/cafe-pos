@@ -1,0 +1,94 @@
+"use client";
+
+import Image from "next/image";
+import menuData from "@/data/menu.json";
+
+interface MenuItem {
+  id: number;
+  name: string;
+  category: string;
+  image: string;
+  price: number;
+  originalPrice: number | null;
+  available: number;
+  sold: number;
+  discount: number | null;
+  unit: string;
+}
+
+interface MenuCardProps {
+  item: MenuItem;
+  onAdd: (item: MenuItem) => void;
+}
+
+function MenuCard({ item, onAdd }: MenuCardProps) {
+  return (
+    <div className="menu-card" onClick={() => onAdd(item)}>
+      {item.discount && (
+        <span className="menu-card-badge">{item.discount}% Off</span>
+      )}
+      <div className="menu-card-image-wrap">
+        <Image
+          src={item.image}
+          alt={item.name}
+          fill
+          className="menu-card-image"
+          sizes="(max-width: 768px) 50vw, 25vw"
+        />
+      </div>
+      <div className="menu-card-info">
+        <h3 className="menu-card-name">{item.name}</h3>
+        <p className="menu-card-meta">
+          {item.available} Available &bull; {item.sold} Sold
+        </p>
+        <div className="menu-card-price-row">
+          {item.originalPrice && (
+            <span className="menu-card-original">₱{item.originalPrice}</span>
+          )}
+          <span className="menu-card-price">₱{item.price}</span>
+          <span className="menu-card-unit">/{item.unit}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface MenuGridProps {
+  activeCategory: string;
+  searchQuery: string;
+  onAdd: (item: MenuItem) => void;
+}
+
+export default function MenuGrid({ activeCategory, searchQuery, onAdd }: MenuGridProps) {
+  const filtered = menuData.menuItems.filter((item) => {
+    const matchCategory =
+      activeCategory === "all" || item.category === activeCategory;
+    const matchSearch = item.name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    return matchCategory && matchSearch;
+  });
+
+  return (
+    <div>
+      <div className="menu-section-header">
+        <h2 className="section-title">Select Menu</h2>
+        <button className="filter-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+            <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46 22,3" />
+          </svg>
+          Filter
+        </button>
+      </div>
+      <div className="menu-grid">
+        {filtered.length === 0 ? (
+          <div className="menu-empty">No items found.</div>
+        ) : (
+          filtered.map((item) => (
+            <MenuCard key={item.id} item={item as MenuItem} onAdd={onAdd} />
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
