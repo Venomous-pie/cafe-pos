@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Sidebar from "./components/Sidebar";
-import CategoryBar from "./components/CategoryBar";
+import CategoryBar, { Category } from "./components/CategoryBar";
 import MenuGrid from "./components/MenuGrid";
 import OrderPanel from "./components/OrderPanel";
-import menuData from "@/data/menu.json";
 
 import { MenuItem, CartItem, SelectedOptions } from "./types";
 import ProductModal from "./components/ProductModal";
@@ -19,12 +18,48 @@ export default function Home() {
   const [selectedProduct, setSelectedProduct] = useState<MenuItem | null>(null);
   const [editingCartItem, setEditingCartItem] = useState<CartItem | null>(null);
 
+  // ── API data ──────────────────────────────────────────────────────────────
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loadingMenu, setLoadingMenu] = useState(true);
+
+  const fetchMenu = useCallback(async () => {
+    setLoadingMenu(true);
+    try {
+      const [itemsRes, catsRes] = await Promise.all([
+        fetch("/api/products"),
+        fetch("/api/categories"),
+      ]);
+      const [items, cats] = await Promise.all([itemsRes.json(), catsRes.json()]);
+      setMenuItems(items);
+      setCategories(cats);
+    } catch (err) {
+      console.error("Failed to load menu data:", err);
+    } finally {
+      setLoadingMenu(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchMenu();
+  }, [fetchMenu]);
+
+  // ── Cashier info (static for now) ─────────────────────────────────────────
+  const cashierName = "Maria Santos";
+  const cashierDate = new Date().toLocaleDateString("en-PH", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+  // ── Cart helpers ──────────────────────────────────────────────────────────
   const generateCartItemId = (
-    productId: number,
+    productId: string,
     variant?: string,
     options?: SelectedOptions
   ) => {
-    let idStr = `${productId}`;
+    let idStr = productId;
     if (variant) idStr += `-${variant}`;
     if (options) {
       const optionKeys = Object.keys(options).sort();
@@ -40,11 +75,9 @@ export default function Home() {
       (item.variants && item.variants.length > 0) ||
       (item.options && item.options.length > 0)
     ) {
-      // Open modal for items with variations
       setSelectedProduct(item);
       setEditingCartItem(null);
     } else {
-      // Add directly
       addOrUpdateCart(item, 1);
     }
   };
@@ -72,7 +105,7 @@ export default function Home() {
           productId: item.id,
           name: item.name,
           category: item.category,
-          image: item.image,
+          image: item.image ?? "",
           basePrice: item.price,
           price: unitPrice,
           quantity,
@@ -90,29 +123,22 @@ export default function Home() {
     options?: SelectedOptions
   ) => {
     if (editingCartItem) {
-      // If editing, we first remove the old item, then add the new one.
-      // Or if the id is the same, just update quantity.
       const newCartItemId = generateCartItemId(item.id, variant, options);
       const unitPrice = calculateItemPrice(item, variant, options);
 
       setCartItems((prev) => {
-        // If the configuration didn't change (ID is the same)
         if (newCartItemId === editingCartItem.id) {
           return prev.map((c) =>
             c.id === editingCartItem.id ? { ...c, quantity } : c
           );
         }
-
-        // If the configuration changed, remove old, add new or merge with existing new
         const filtered = prev.filter((c) => c.id !== editingCartItem.id);
         const existingNew = filtered.find((c) => c.id === newCartItemId);
-        
         if (existingNew) {
-           return filtered.map((c) =>
-             c.id === newCartItemId ? { ...c, quantity: c.quantity + quantity } : c
-           );
+          return filtered.map((c) =>
+            c.id === newCartItemId ? { ...c, quantity: c.quantity + quantity } : c
+          );
         }
-
         return [
           ...filtered,
           {
@@ -120,13 +146,13 @@ export default function Home() {
             productId: item.id,
             name: item.name,
             category: item.category,
-            image: item.image,
+            image: item.image ?? "",
             basePrice: item.price,
             price: unitPrice,
             quantity,
             variant,
             options,
-          }
+          },
         ];
       });
     } else {
@@ -137,11 +163,11 @@ export default function Home() {
   };
 
   const handleUpdateQty = (id: string, delta: number) => {
-    setCartItems((prev) => {
-      return prev
+    setCartItems((prev) =>
+      prev
         .map((c) => (c.id === id ? { ...c, quantity: c.quantity + delta } : c))
-        .filter((c) => c.quantity > 0);
-    });
+        .filter((c) => c.quantity > 0)
+    );
   };
 
   const handleRemoveItem = (id: string) => {
@@ -149,10 +175,11 @@ export default function Home() {
   };
 
   const handleEditItem = (cartItem: CartItem) => {
-    const itemDef = menuData.menuItems.find((m) => m.id === cartItem.productId);
+    // Look up from the live fetched menu items
+    const itemDef = menuItems.find((m) => m.id === cartItem.productId);
     if (itemDef) {
       setEditingCartItem(cartItem);
-      setSelectedProduct(itemDef as MenuItem);
+      setSelectedProduct(itemDef);
     }
   };
 
@@ -167,7 +194,7 @@ export default function Home() {
         {/* Top Bar */}
         <header className="pos-topbar">
           <div className="search-bar">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="search-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="search-icon" aria-hidden="true">
               <circle cx="11" cy="11" r="8" />
               <line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
@@ -177,16 +204,17 @@ export default function Home() {
               className="search-input"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              aria-label="Search menu items"
             />
           </div>
 
           <div className="cashier-info">
             <div className="cashier-text">
-              <span className="cashier-name">{menuData.cashier.name}</span>
-              <span className="cashier-date">{menuData.cashier.date}</span>
+              <span className="cashier-name">{cashierName}</span>
+              <span className="cashier-date">{cashierDate}</span>
             </div>
             <div className="cashier-avatar">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5" aria-hidden="true">
                 <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
                 <circle cx="12" cy="7" r="4" />
               </svg>
@@ -196,12 +224,23 @@ export default function Home() {
 
         {/* Scrollable Content Area */}
         <div className="pos-content-scroll">
-          <CategoryBar activeCategory={activeCategory} onSelect={setActiveCategory} />
-          <MenuGrid
+          <CategoryBar
             activeCategory={activeCategory}
-            searchQuery={searchQuery}
-            onAdd={handleAddToCart}
+            categories={categories}
+            onSelect={setActiveCategory}
           />
+          {loadingMenu ? (
+            <div className="menu-empty" style={{ padding: "40px 0" }}>
+              <span className="spinner" style={{ width: 32, height: 32, borderWidth: 3 }} />
+            </div>
+          ) : (
+            <MenuGrid
+              activeCategory={activeCategory}
+              searchQuery={searchQuery}
+              menuItems={menuItems}
+              onAdd={handleAddToCart}
+            />
+          )}
         </div>
       </main>
 

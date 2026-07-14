@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  name     String
+  slug     String    @unique
+  icon     String?
+  products Product[]
+}
+
+model Product {
+  id           String        @id @default(cuid())
+  name         String
+  description  String?
+  imageUrl     String?
+  categoryId   String
+  category     Category      @relation(fields: [categoryId], references: [id])
+  isAvailable  Boolean       @default(true)
+  available    Int           @default(0)
+  sold         Int           @default(0)
+  unit         String        @default("Piece")
+  variants     Variant[]
+  optionGroups OptionGroup[]
+  promotions   Promotion[]
+  orderItems   OrderItem[]
+}
+
+model Variant {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  name      String
+  price     Decimal
+}
+
+model OptionGroup {
+  id        String         @id @default(cuid())
+  productId String
+  product   Product        @relation(fields: [productId], references: [id])
+  name      String
+  required  Boolean        @default(false)
+  choices   OptionChoice[]
+}
+
+model OptionChoice {
+  id              String      @id @default(cuid())
+  optionGroupId   String
+  optionGroup     OptionGroup @relation(fields: [optionGroupId], references: [id])
+  name            String
+  additionalPrice Decimal     @default(0)
+}
+
+model Promotion {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  type      String   // "PERCENT_OFF" | "FIXED_OFF"
+  value     Decimal
+  startsAt  DateTime
+  endsAt    DateTime
+  isActive  Boolean  @default(true)
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  status          String      @default("pending") // pending | completed | cancelled | refunded
+  subtotal        Decimal
+  tax             Decimal
+  total           Decimal
+  paymentMethod   String      // cash | qr | maya | maribank
+  paymentStatus   String      @default("pending") // pending | paid | failed
+  hardwareWarning String?
+  createdAt       DateTime    @default(now())
+  items           OrderItem[]
+}
+
+model OrderItem {
+  id                String   @id @default(cuid())
+  orderId           String
+  order             Order    @relation(fields: [orderId], references: [id])
+  productId         String
+  product           Product  @relation(fields: [productId], references: [id])
+  variantName       String?
+  selectedChoiceIds String   @default("[]") // JSON array of OptionChoice ids
+  quantity          Int
+  priceEach         Decimal  // snapshotted price at time of order
+}

@@ -203,10 +203,10 @@
     }
   ],
   "paymentMethods": [
-    { "id": "cash", "name": "Cash", "icon": "banknote" },
-    { "id": "card", "name": "Card", "icon": "credit-card" },
-    { "id": "qr", "name": "GCash", "icon": "qr-code" },
-    { "id": "maya", "name": "Maya", "icon": "wallet" }
+    { "id": "cash", "name": "Cash" },
+    { "id": "qr", "name": "GCash" },
+    { "id": "maya", "name": "Maya" },
+    { "id": "maribank", "name": "Maribank" }
   ],
   "taxRate": 0.08
 }

@@ -279,3 +279,224 @@
   background: #ef4444 !important;
   color: white !important;
 }
+
+/* ============================================
+   PAY ICON IMAGE WRAPPER
+   ============================================ */
+.pay-icon-img-wrap {
+  width: 24px;
+  height: 24px;
+  position: relative;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* ============================================
+   CART ITEM CLICKABLE AREAS
+   ============================================ */
+.cart-item-clickable {
+  cursor: pointer;
+}
+
+/* ============================================
+   CART ITEM BUTTON GROUP
+   ============================================ */
+.cart-item-btn-group {
+  display: flex;
+  gap: 4px;
+}
+
+/* Edit button uses brand colour instead of muted */
+.edit-item-btn {
+  color: var(--brand) !important;
+}
+.edit-item-btn:hover {
+  color: var(--brand-dark) !important;
+  background: var(--brand-light) !important;
+}
+
+/* ============================================
+   ORDER BANNERS (hardware warning / error)
+   ============================================ */
+.order-hardware-warning,
+.order-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.order-hardware-warning {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
+
+.order-error-banner {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+.order-hardware-warning span,
+.order-error-banner span {
+  flex: 1;
+}
+
+.order-warning-dismiss {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0 2px;
+  color: inherit;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+.order-warning-dismiss:hover {
+  opacity: 1;
+}
+
+.order-error-retry {
+  background: transparent;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  color: inherit;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.order-error-retry:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+/* ==========================================================================
+   Receipt Modal Styles
+   ========================================================================== */
+
+.receipt-modal {
+  max-width: 400px;
+  background-color: #f8f9fa; /* Slightly off-white for thermal paper look */
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15), 0 5px 10px rgba(0,0,0,0.05);
+}
+
+.receipt-paper {
+  font-family: 'Courier New', Courier, monospace;
+  color: #1a1a2e;
+  padding: 32px 24px;
+  font-size: 14px;
+  line-height: 1.5;
+  /* Top and bottom jagged edge effect using radial gradient */
+  background: 
+    linear-gradient(-45deg, transparent 16px, #f8f9fa 0), 
+    linear-gradient(45deg, transparent 16px, #f8f9fa 0);
+  background-color: #f8f9fa;
+  position: relative;
+}
+
+.receipt-header {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.receipt-header h2 {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0 0 4px 0;
+  letter-spacing: 1px;
+}
+
+.receipt-header p {
+  margin: 0;
+  color: #4b5563;
+  font-size: 12px;
+}
+
+.receipt-divider {
+  border-top: 1px dashed #9ca3af;
+  margin: 12px 0;
+}
+
+.receipt-meta {
+  font-size: 13px;
+}
+
+.receipt-meta p {
+  display: flex;
+  justify-content: space-between;
+  margin: 4px 0;
+}
+
+.receipt-items {
+  margin: 16px 0;
+}
+
+.receipt-item {
+  margin-bottom: 8px;
+}
+
+.receipt-item-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.receipt-qty {
+  width: 24px;
+  font-weight: bold;
+}
+
+.receipt-name {
+  flex: 1;
+}
+
+.receipt-price {
+  font-weight: bold;
+}
+
+.receipt-item-options {
+  padding-left: 32px;
+  font-size: 12px;
+  color: #4b5563;
+}
+
+.receipt-totals {
+  margin-top: 16px;
+}
+
+.receipt-totals-line {
+  display: flex;
+  justify-content: space-between;
+  margin: 4px 0;
+}
+
+.receipt-totals-line.grand-total {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.receipt-footer {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 13px;
+}
+
+.receipt-footer p {
+  margin: 4px 0;
+}
+
+.receipt-actions {
+  padding: 16px 24px;
+  background-color: var(--surface);
+  border-top: 1px solid var(--border);
+}

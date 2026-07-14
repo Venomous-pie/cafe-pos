@@ -11,8 +11,8 @@
   --brand-dark: #c9581f;
   --bg: #f5f6fa;
   --surface: #ffffff;
-  --sidebar-bg: #1a1a2e;
-  --sidebar-active: #e8703a;
+  --sidebar-bg: #ffffff;
+  --sidebar-active: #050505;
   --sidebar-hover: rgba(255, 255, 255, 0.08);
   --text-primary: #1a1a2e;
   --text-secondary: #6b7280;
@@ -117,7 +117,7 @@ button {
   align-items: center;
   justify-content: center;
   border-radius: 10px;
-  color: rgba(255, 255, 255, 0.45);
+  color: var(--text-secondary); 
   transition: all 0.2s ease;
   position: relative;
 }
@@ -898,7 +898,10 @@ button {
    ============================================ */
 .modal-overlay {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
@@ -1165,6 +1168,7 @@ button {
   color: #ef4444;
   border-color: #ef4444;
 }
+
 .cancel-order-btn:hover {
   background: #ef4444;
   color: white;

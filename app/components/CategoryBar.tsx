@@ -1,6 +1,13 @@
 "use client";
 
-import menuData from "@/data/menu.json";
+import { JSX } from "react";
+
+export interface Category {
+  id: string;
+  name: string;
+  icon?: string | null;
+  count: number;
+}
 
 const categoryIcons: Record<string, JSX.Element> = {
   all: (
@@ -55,22 +62,35 @@ const categoryIcons: Record<string, JSX.Element> = {
 
 interface CategoryBarProps {
   activeCategory: string;
+  categories: Category[];
   onSelect: (id: string) => void;
 }
 
-export default function CategoryBar({ activeCategory, onSelect }: CategoryBarProps) {
+export default function CategoryBar({ activeCategory, categories, onSelect }: CategoryBarProps) {
   return (
     <div>
       <h2 className="section-title" style={{ marginBottom: "12px" }}>Categories</h2>
       <div className="category-bar">
-        {menuData.categories.map((cat) => (
+        {/* "All Menu" virtual category */}
+        <button
+          onClick={() => onSelect("all")}
+          className={`category-item ${activeCategory === "all" ? "active" : ""}`}
+          aria-pressed={activeCategory === "all"}
+        >
+          <div className="category-icon-wrap">{categoryIcons["all"]}</div>
+          <span className="category-name">All Menu</span>
+          <span className="category-count">{categories.reduce((s, c) => s + c.count, 0)} item</span>
+        </button>
+
+        {categories.map((cat) => (
           <button
             key={cat.id}
             onClick={() => onSelect(cat.id)}
             className={`category-item ${activeCategory === cat.id ? "active" : ""}`}
+            aria-pressed={activeCategory === cat.id}
           >
             <div className="category-icon-wrap">
-              {categoryIcons[cat.id] || categoryIcons["all"]}
+              {categoryIcons[cat.id] ?? categoryIcons["all"]}
             </div>
             <span className="category-name">{cat.name}</span>
             <span className="category-count">{cat.count} item</span>
@@ -80,3 +100,4 @@ export default function CategoryBar({ activeCategory, onSelect }: CategoryBarPro
     </div>
   );
 }
+

@@ -15,7 +15,7 @@ export interface ProductOption {
 }
 
 export interface MenuItem {
-  id: number;
+  id: string;
   name: string;
   category: string;
   image: string;
@@ -24,6 +24,7 @@ export interface MenuItem {
   available: number;
   sold: number;
   discount: number | null;
+  activePromotion?: { type: string; value: number };
   unit: string;
   variants?: ProductVariant[];
   options?: ProductOption[];
@@ -35,7 +36,7 @@ export interface SelectedOptions {
 
 export interface CartItem {
   id: string;
-  productId: number;
+  productId: string;
   name: string;
   category: string;
   image: string;

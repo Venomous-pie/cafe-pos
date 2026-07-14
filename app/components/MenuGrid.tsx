@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import menuData from "@/data/menu.json";
 
 import { MenuItem } from "../types";
 
@@ -45,11 +44,12 @@ function MenuCard({ item, onAdd }: MenuCardProps) {
 interface MenuGridProps {
   activeCategory: string;
   searchQuery: string;
+  menuItems: MenuItem[];
   onAdd: (item: MenuItem) => void;
 }
 
-export default function MenuGrid({ activeCategory, searchQuery, onAdd }: MenuGridProps) {
-  const filtered = menuData.menuItems.filter((item) => {
+export default function MenuGrid({ activeCategory, searchQuery, menuItems, onAdd }: MenuGridProps) {
+  const filtered = menuItems.filter((item) => {
     const matchCategory =
       activeCategory === "all" || item.category === activeCategory;
     const matchSearch = item.name
@@ -74,7 +74,7 @@ export default function MenuGrid({ activeCategory, searchQuery, onAdd }: MenuGri
           <div className="menu-empty">No items found.</div>
         ) : (
           filtered.map((item) => (
-            <MenuCard key={item.id} item={item as MenuItem} onAdd={onAdd} />
+            <MenuCard key={item.id} item={item} onAdd={onAdd} />
           ))
         )}
       </div>
