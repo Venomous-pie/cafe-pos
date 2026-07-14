@@ -45,7 +45,7 @@ export default function Home() {
   }, [fetchMenu]);
 
   // ── Cashier info (static for now) ─────────────────────────────────────────
-  const cashierName = "Maria Santos";
+  const cashierName = "Claire Jem Dedicatoria";
   const cashierDate = new Date().toLocaleDateString("en-PH", {
     weekday: "long",
     day: "numeric",

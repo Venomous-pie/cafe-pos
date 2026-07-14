@@ -7,10 +7,8 @@ import { JSX, useState } from "react";
 import { CartItem } from "../types";
 import { Order } from "@prisma/client";
 import ReceiptModal from "./ReceiptModal";
+import QRPaymentModal from "./QRPaymentModal";
 
-// ─── Constants ─────────────────────────────────────────────────────────────
-// Tax rate is a display-only estimate; the server always recalculates the
-// authoritative total. Keep in sync with lib/pricing.ts TAX_RATE.
 const TAX_RATE = 0.08;
 
 const PAYMENT_METHODS = [
@@ -21,6 +19,8 @@ const PAYMENT_METHODS = [
 ] as const;
 
 type PaymentMethodId = (typeof PAYMENT_METHODS)[number]["id"];
+
+const QR_METHODS: PaymentMethodId[] = ["qr", "maya", "maribank"];
 
 // ─── Payment Icons ──────────────────────────────────────────────────────────
 const FallbackIcon = (
@@ -60,7 +60,6 @@ function getPaymentIcon(id: string): JSX.Element {
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
-/** Derive configurability from the cart item itself — no menu lookup needed. */
 const isConfigurable = (item: CartItem) =>
   Boolean(item.variant || (item.options && Object.keys(item.options).length > 0));
 
@@ -91,6 +90,7 @@ export default function OrderPanel({
   const [orderError, setOrderError] = useState<OrderError | null>(null);
   const [hardwareWarning, setHardwareWarning] = useState<string | null>(null);
   const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
+  const [showQRModal, setShowQRModal] = useState(false);
 
   // Display-only estimates — server recalculates authoritatively on submit.
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -103,9 +103,7 @@ export default function OrderPanel({
     onClearCart();
   };
 
-  const handleProcess = async () => {
-    if (cartItems.length === 0) return;
-
+  const submitOrder = async () => {
     setProcessing(true);
     setOrderError(null);
     setHardwareWarning(null);
@@ -118,7 +116,6 @@ export default function OrderPanel({
           variantName: item.variant ?? null,
           selectedOptions: item.options ?? {},
           quantity: item.quantity,
-          // Client price is a hint only — server ignores it and recalculates.
           clientPriceHint: item.price,
         })),
       };
@@ -151,6 +148,24 @@ export default function OrderPanel({
     } finally {
       setProcessing(false);
     }
+  };
+
+  const handleProcess = () => {
+    if (cartItems.length === 0) return;
+
+    // QR-based methods show a scan screen with the amount before submitting the order.
+    // Cash skips straight to submission — no QR needed at the register.
+    if (QR_METHODS.includes(selectedPayment)) {
+      setShowQRModal(true);
+      return;
+    }
+
+    submitOrder();
+  };
+
+  const handleQRConfirmed = () => {
+    setShowQRModal(false);
+    submitOrder();
   };
 
   return (
@@ -195,7 +210,7 @@ export default function OrderPanel({
             </svg>
             <span>{orderError.message}</span>
             {orderError.retryable && (
-              <button className="order-error-retry" onClick={handleProcess} aria-label="Retry transaction">
+              <button className="order-error-retry" onClick={submitOrder} aria-label="Retry transaction">
                 Retry
               </button>
             )}
@@ -371,6 +386,16 @@ export default function OrderPanel({
           )}
         </button>
       </div>
+
+      {showQRModal && (
+        <QRPaymentModal
+          method={selectedPayment as "qr" | "maya" | "maribank"}
+          methodName={PAYMENT_METHODS.find((m) => m.id === selectedPayment)?.name ?? ""}
+          amount={total}
+          onConfirm={handleQRConfirmed}
+          onCancel={() => setShowQRModal(false)}
+        />
+      )}
 
       {completedOrder && (
         <ReceiptModal
