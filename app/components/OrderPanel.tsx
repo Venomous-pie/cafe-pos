@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { JSX, useState } from "react";
 import menuData from "@/data/menu.json";
 
 interface CartItem {
