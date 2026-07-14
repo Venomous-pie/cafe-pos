@@ -30,25 +30,22 @@ const PaymentIcons: Record<string, JSX.Element> = {
     </svg>
   ),
   qr: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="pay-icon">
-      <rect x="3" y="3" width="7" height="7" />
-      <rect x="14" y="3" width="7" height="7" />
-      <rect x="3" y="14" width="7" height="7" />
-      <rect x="14" y="14" width="3" height="3" />
-      <rect x="18" y="14" width="3" height="3" />
-      <rect x="14" y="18" width="3" height="3" />
-      <rect x="18" y="18" width="3" height="3" />
-    </svg>
+    <div style={{ width: 24, height: 24, position: "relative", borderRadius: "4px", overflow: "hidden" }}>
+      <Image src="/payment_platform/gcash.jpeg" alt="GCash" fill style={{ objectFit: "cover" }} sizes="24px" />
+    </div>
   ),
   maya: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="pay-icon">
-      <path d="M20 12V22H4V12" />
-      <path d="M22 7H2v5h20V7z" />
-      <path d="M12 22V7" />
-      <path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z" />
-      <path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z" />
-    </svg>
+    <div style={{ width: 24, height: 24, position: "relative", borderRadius: "4px", overflow: "hidden" }}>
+      <Image src="/payment_platform/maya.jpeg" alt="Maya" fill style={{ objectFit: "cover" }} sizes="24px" />
+    </div>
   ),
+};
+
+const isConfigurable = (productId: number) => {
+  const product = menuData.menuItems.find((m) => m.id === productId);
+  if (!product) return false;
+  // @ts-ignore (ignoring strict typing since menuData may not strictly match the MenuItem type in this scope, but variants/options exist in JSON)
+  return (product.variants?.length > 0) || (product.options?.length > 0);
 };
 
 export default function OrderPanel({ cartItems, onUpdateQty, onRemoveItem, onEditItem, onClearCart }: OrderPanelProps) {
@@ -138,12 +135,37 @@ export default function OrderPanel({ cartItems, onUpdateQty, onRemoveItem, onEdi
                   </div>
                 </div>
                 <div className="cart-item-actions">
-                  <button className="remove-item-btn" onClick={() => onRemoveItem(item.id)}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
-                      <line x1="18" y1="6" x2="6" y2="18" />
-                      <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
-                  </button>
+                  <div style={{ display: "flex", gap: "4px" }}>
+                    {isConfigurable(item.productId) && (
+                      <button
+                        className="remove-item-btn"
+                        style={{ color: "var(--brand)" }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEditItem(item);
+                        }}
+                        title="Edit Item"
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+                          <path d="M12 20h9" />
+                          <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                        </svg>
+                      </button>
+                    )}
+                    <button
+                      className="remove-item-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRemoveItem(item.id);
+                      }}
+                      title="Remove Item"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                    </button>
+                  </div>
                   <div className="cart-item-price">
                     ₱{(item.price * item.quantity).toLocaleString()}
                   </div>
