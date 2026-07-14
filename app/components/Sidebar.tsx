@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 
 const navItems = [
   {
@@ -62,14 +63,8 @@ export default function Sidebar() {
     <aside className="sidebar">
       {/* Logo */}
       <div className="sidebar-logo">
-        <div className="logo-icon">
-          <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
-            <path d="M18 8h1a4 4 0 010 8h-1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            <line x1="6" y1="1" x2="6" y2="4" stroke="white" strokeWidth="2" strokeLinecap="round" />
-            <line x1="10" y1="1" x2="10" y2="4" stroke="white" strokeWidth="2" strokeLinecap="round" />
-            <line x1="14" y1="1" x2="14" y2="4" stroke="white" strokeWidth="2" strokeLinecap="round" />
-          </svg>
+        <div className="logo-icon" style={{ padding: 0, overflow: 'hidden' }}>
+          <Image src="/logo.png" alt="Logo" width={40} height={40} className="w-full h-full object-cover" />
         </div>
       </div>
 
