@@ -74,15 +74,17 @@ export default function ProductModal({
         </button>
 
         <div className="modal-header">
-          <div className="modal-image-wrap" style={{ position: "relative", width: "80px", height: "80px", borderRadius: "12px", overflow: "hidden", flexShrink: 0 }}>
-            <Image
-              src={item.image}
-              alt={item.name}
-              fill
-              style={{ objectFit: "cover" }}
-              sizes="120px"
-            />
-          </div>
+          {item.image && (
+            <div className="modal-image-wrap">
+              <Image
+                src={item.image}
+                alt={item.name}
+                fill
+                style={{ objectFit: "cover" }}
+                sizes="80px"
+              />
+            </div>
+          )}
           <div className="modal-title-group">
             <h2 className="modal-title">{item.name}</h2>
             <p className="modal-base-price">Base: ₱{item.price}</p>

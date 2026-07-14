@@ -71,14 +71,15 @@ export default function Home() {
   };
 
   const handleAddToCart = (item: MenuItem) => {
-    if (
-      (item.variants && item.variants.length > 0) ||
-      (item.options && item.options.length > 0)
-    ) {
+    const hasMultipleVariants = item.variants && item.variants.length > 1;
+    const hasOptions = item.options && item.options.length > 0;
+
+    if (hasMultipleVariants || hasOptions) {
       setSelectedProduct(item);
       setEditingCartItem(null);
     } else {
-      addOrUpdateCart(item, 1);
+      const variant = item.variants?.length === 1 ? item.variants[0].name : undefined;
+      addOrUpdateCart(item, 1, variant);
     }
   };
 
