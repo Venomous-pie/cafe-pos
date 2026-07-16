@@ -31,8 +31,25 @@ export async function POST(request: Request) {
       rows = result.data as Record<string, string>[];
     } else if (fileName.endsWith(".xlsx") || fileName.endsWith(".xls")) {
       const workbook = XLSX.read(buffer, { type: "buffer" });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const rawRows: any[] = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+      let rawRows: any[] = [];
+      let baseHeaders: string[] | null = null;
+
+      for (const sheetName of workbook.SheetNames) {
+        const sheet = workbook.Sheets[sheetName];
+        const sheetRows: any[] = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+        if (sheetRows.length === 0) continue;
+
+        const currentHeaders = Object.keys(sheetRows[0]);
+        if (!baseHeaders) {
+          baseHeaders = currentHeaders;
+          rawRows = rawRows.concat(sheetRows);
+        } else {
+          const overlap = baseHeaders.filter((h) => currentHeaders.includes(h)).length;
+          if (baseHeaders.length > 0 && overlap / baseHeaders.length >= 0.5) {
+            rawRows = rawRows.concat(sheetRows);
+          }
+        }
+      }
       headers = rawRows.length > 0 ? Object.keys(rawRows[0]) : [];
       rows = rawRows.map((r) =>
         Object.fromEntries(Object.entries(r).map(([k, v]) => [k, String(v)]))

@@ -40,9 +40,27 @@ export async function POST(request: Request) {
       rows = result.data.slice(0, MAX_PREVIEW_ROWS) as Record<string, string>[];
     } else if (fileName.endsWith(".xlsx") || fileName.endsWith(".xls")) {
       const workbook = XLSX.read(buffer, { type: "buffer" });
-      const sheetName = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[sheetName];
-      const rawRows: any[] = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+      let rawRows: any[] = [];
+      let baseHeaders: string[] | null = null;
+
+      for (const sheetName of workbook.SheetNames) {
+        const sheet = workbook.Sheets[sheetName];
+        const sheetRows: any[] = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+        if (sheetRows.length === 0) continue;
+
+        const currentHeaders = Object.keys(sheetRows[0]);
+        if (!baseHeaders) {
+          baseHeaders = currentHeaders;
+          rawRows = rawRows.concat(sheetRows);
+        } else {
+          // Heuristic: only merge sheets that share at least 50% of the primary sheet's headers.
+          // This naturally filters out summary, metadata, and changelog sheets.
+          const overlap = baseHeaders.filter((h) => currentHeaders.includes(h)).length;
+          if (baseHeaders.length > 0 && overlap / baseHeaders.length >= 0.5) {
+            rawRows = rawRows.concat(sheetRows);
+          }
+        }
+      }
 
       if (rawRows.length === 0) {
         return NextResponse.json(

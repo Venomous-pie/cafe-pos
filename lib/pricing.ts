@@ -91,13 +91,12 @@ export async function calculateOrderTotals(
     } else if (product.variants.length > 0) {
       // No variant specified but product has variants → use cheapest as fallback
       basePrice = Math.min(...product.variants.map((v) => Number(v.price)));
+    } else if (product.basePrice !== null) {
+      // No variants, use the flat basePrice field (from imports/flat products)
+      basePrice = Number(product.basePrice);
     } else {
-      // No variants — products without variants store their price in the first
-      // variant row by convention (set during seeding). If truly none exist,
-      // throw to surface the data issue.
-      throw new Error(
-        `Product "${product.name}" has no variants and no price configured`
-      );
+      // No variants and no basePrice — default to 0 (e.g. for free items)
+      basePrice = 0;
     }
 
     // ── Options price ────────────────────────────────────────────────────────
