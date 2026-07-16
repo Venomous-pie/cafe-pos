@@ -294,9 +294,9 @@ button {
    CATEGORY BAR
    ============================================ */
 .category-bar {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-  gap: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .category-item {
@@ -312,7 +312,8 @@ button {
   aspect-ratio: 1 / 1;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
   transition: all 0.2s ease;
-  max-width: 160px;
+  width: 110px;
+  flex-shrink: 0;
 }
 
 .category-item:hover {

@@ -1,6 +1,77 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const {
+      name,
+      sku,
+      basePrice,
+      categoryName,
+      description,
+      imageUrl,
+      unit = "Piece",
+      trackStock = false,
+      isActive = true,
+      isAvailable = true,
+      importBatchId,
+      customFields,
+    } = body;
+
+    if (!name || !categoryName) {
+      return NextResponse.json(
+        { error: "name and categoryName are required" },
+        { status: 400 }
+      );
+    }
+
+    // Resolve category by name (case-insensitive), or create it
+    let category = await prisma.category.findFirst({
+      where: { name: { equals: categoryName } },
+    });
+
+    if (!category) {
+      const slug = categoryName
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9-]/g, "");
+      category = await prisma.category.create({
+        data: { name: categoryName, slug },
+      });
+    }
+
+    const product = await prisma.product.create({
+      data: {
+        name,
+        sku: sku || null,
+        basePrice: basePrice != null ? basePrice : null,
+        description: description || null,
+        imageUrl: imageUrl || null,
+        categoryId: category.id,
+        unit,
+        trackStock,
+        isActive,
+        isAvailable,
+        importBatchId: importBatchId || null,
+        customFields: customFields ? JSON.stringify(customFields) : null,
+      },
+      include: { category: true },
+    });
+
+    return NextResponse.json(product, { status: 201 });
+  } catch (error: any) {
+    if (error?.code === "P2002") {
+      return NextResponse.json(
+        { error: "A product with that SKU already exists" },
+        { status: 409 }
+      );
+    }
+    console.error("Failed to create product:", error);
+    return NextResponse.json({ error: "Failed to create product" }, { status: 500 });
+  }
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -39,8 +110,8 @@ export async function GET(request: Request) {
 
     // Map to the shape expected by the frontend
     const formatted = products.map(p => {
-      // Find base price (assume first variant, as seeded)
-      const basePrice = p.variants.length > 0 ? Number(p.variants[0].price) : 0;
+      // Find base price (assume basePrice field, fallback to first variant, as seeded)
+      const basePrice = p.basePrice !== null ? Number(p.basePrice) : (p.variants.length > 0 ? Number(p.variants[0].price) : 0);
       
       const activePromo = p.promotions[0];
       let activePromotion = undefined;
@@ -62,6 +133,7 @@ export async function GET(request: Request) {
         originalPrice: activePromo ? basePrice : null,
         available: p.available,
         sold: p.sold,
+        trackStock: p.trackStock,
         discount,
         activePromotion,
         unit: p.unit,

@@ -22,6 +22,7 @@ export interface MenuItem {
   price: number; // Default base price
   originalPrice: number | null;
   available: number;
+  trackStock?: boolean;
   sold: number;
   discount: number | null;
   activePromotion?: { type: string; value: number };

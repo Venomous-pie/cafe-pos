@@ -19,20 +19,26 @@ model Category {
 }
 
 model Product {
-  id           String        @id @default(cuid())
-  name         String
-  description  String?
-  imageUrl     String?
-  categoryId   String
-  category     Category      @relation(fields: [categoryId], references: [id])
-  isAvailable  Boolean       @default(true)
-  available    Int           @default(0)
-  sold         Int           @default(0)
-  unit         String        @default("Piece")
-  variants     Variant[]
-  optionGroups OptionGroup[]
-  promotions   Promotion[]
-  orderItems   OrderItem[]
+  id            String        @id @default(cuid())
+  name          String
+  sku           String?       @unique // dedup key for import wizard
+  basePrice     Decimal?      // price when no variants apply; null = variant-only
+  description   String?
+  imageUrl      String?
+  categoryId    String
+  category      Category      @relation(fields: [categoryId], references: [id])
+  isAvailable   Boolean       @default(true) // runtime toggle (e.g. sold out today)
+  isActive      Boolean       @default(true) // permanent flag (e.g. removed from menu)
+  trackStock    Boolean       @default(false) // opt-in per-product stock tracking
+  available     Int           @default(0)
+  sold          Int           @default(0)
+  unit          String        @default("Piece")
+  importBatchId String?       // set during CSV import; used for rollback
+  customFields  String?       // JSON blob for cafe-specific attributes (e.g. roast level, allergens)
+  variants      Variant[]
+  optionGroups  OptionGroup[]
+  promotions    Promotion[]
+  orderItems    OrderItem[]
 }
 
 model Variant {
@@ -64,7 +70,7 @@ model Promotion {
   id        String   @id @default(cuid())
   productId String
   product   Product  @relation(fields: [productId], references: [id])
-  type      String   // "PERCENT_OFF" | "FIXED_OFF"
+  type      String // "PERCENT_OFF" | "FIXED_OFF"
   value     Decimal
   startsAt  DateTime
   endsAt    DateTime
@@ -77,7 +83,7 @@ model Order {
   subtotal        Decimal
   tax             Decimal
   total           Decimal
-  paymentMethod   String      // cash | gcash | maya | maribank
+  paymentMethod   String // cash | gcash | maya | maribank
   paymentStatus   String      @default("pending") // pending | paid | failed
   hardwareWarning String?
   createdAt       DateTime    @default(now())
@@ -85,13 +91,13 @@ model Order {
 }
 
 model OrderItem {
-  id                String   @id @default(cuid())
+  id                String  @id @default(cuid())
   orderId           String
-  order             Order    @relation(fields: [orderId], references: [id])
+  order             Order   @relation(fields: [orderId], references: [id])
   productId         String
-  product           Product  @relation(fields: [productId], references: [id])
+  product           Product @relation(fields: [productId], references: [id])
   variantName       String?
-  selectedChoiceIds String   @default("[]") // JSON array of OptionChoice ids
+  selectedChoiceIds String  @default("[]") // JSON array of OptionChoice ids
   quantity          Int
-  priceEach         Decimal  // snapshotted price at time of order
+  priceEach         Decimal // snapshotted price at time of order
 }
